@@ -21,6 +21,8 @@ def get_news(query: str, exclude_words: list, api_key: str = API_KEY) -> list:
 
         news_data = response.json()
         print(news_data)
+        status_code = response.status_code
+        print(f"Статус код: {status_code}")
 
         if news_data.get("status") != "ok":
             return []

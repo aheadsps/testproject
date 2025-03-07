@@ -3,7 +3,7 @@ from src.news import get_news
 
 def main():
     """Главная функция для работы приложения"""
-    articles = get_news('Tesla', ['Twitter'])
+    articles = get_news('Tesla', [])
     print(articles)
 
 if __name__ == '__main__':
