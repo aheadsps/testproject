@@ -1,8 +1,17 @@
 import datetime
-
+import logging
 import requests
 
 from src.config import API_KEY, BASE_URL
+
+
+logger = logging.getLogger("news")
+logger.setLevel(logging.INFO)
+file_handler = logging.FileHandler("logs/news.log")
+file_formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+file_handler.setFormatter(file_formatter)
+logger.addHandler(file_handler)
+
 
 
 def get_news(query: str, exclude_words: list, api_key: str = API_KEY) -> list:
@@ -14,6 +23,7 @@ def get_news(query: str, exclude_words: list, api_key: str = API_KEY) -> list:
         "apiKey": api_key
     }
     try:
+        logger.info(f"Выполняем запрос с ключевыми словами: {query}")
         response = requests.get(
             url=BASE_URL,
             params=params
@@ -21,8 +31,11 @@ def get_news(query: str, exclude_words: list, api_key: str = API_KEY) -> list:
 
         news_data = response.json()
         print(news_data)
-
+        status_code = response.status_code
+        print(f"Статус код: {status_code}")
+        
         if news_data.get("status") != "ok":
+            logger.info('Статей не нашлось')
             return []
 
         articles_list = news_data.get('articles', [])
@@ -30,6 +43,7 @@ def get_news(query: str, exclude_words: list, api_key: str = API_KEY) -> list:
 
         articles_result = []
 
+        logger.info(f'Фильтруем новости по словам исключениям: {", ".join(exclude_words)}')
         for article in articles_list:
 
             content = f"{article.get('title')} {article.get('content')}".lower()
@@ -48,7 +62,9 @@ def get_news(query: str, exclude_words: list, api_key: str = API_KEY) -> list:
 
         return articles_result
 
-    except requests.RequestException:
+    except requests.RequestException as ex:
+        logger.error(f'Произошла ошибка: {ex}')
         return []
-    except Exception:
+    except Exception as ex:
+        logger.error(f'Произошла ошибка: {ex}')
         return []
